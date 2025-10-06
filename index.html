@@ -361,40 +361,48 @@
 
     <div class="control-panel">
         <div class="control-section">
-            <div class="section-title">Emission Mode</div>
+            <div class="section-title">Modo de Renderizado</div>
             <div class="mode-grid">
-                <button class="mode-btn active" data-mode="flow">Flow</button>
-                <button class="mode-btn" data-mode="explosion">Explosion</button>
-                <button class="mode-btn" data-mode="gravity">Gravity</button>
-                <button class="mode-btn" data-mode="spiral">Spiral</button>
-                <button class="mode-btn" data-mode="fireworks">Fireworks</button>
-                <button class="mode-btn" data-mode="galaxy">Galaxy</button>
+                <button class="mode-btn" id="animationMode">Animación</button>
+                <button class="mode-btn active" id="drawMode">Dibujo</button>
             </div>
         </div>
 
         <div class="control-section">
-            <div class="section-title">Physics</div>
+            <div class="section-title">Modo de Emisión</div>
+            <div class="mode-grid">
+                <button class="mode-btn active" data-mode="flow">Flujo</button>
+                <button class="mode-btn" data-mode="explosion">Explosión</button>
+                <button class="mode-btn" data-mode="gravity">Gravedad</button>
+                <button class="mode-btn" data-mode="spiral">Espiral</button>
+                <button class="mode-btn" data-mode="fireworks">Fuegos</button>
+                <button class="mode-btn" data-mode="galaxy">Galaxia</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Física</div>
             
             <div class="control-item">
-                <label>Particle Size</label>
+                <label>Tamaño de Partícula</label>
                 <input type="range" id="particleSize" min="1" max="10" value="3" step="0.5">
                 <div class="value-display"><span id="particleSizeVal">3</span>px</div>
             </div>
 
             <div class="control-item">
-                <label>Speed</label>
+                <label>Velocidad</label>
                 <input type="range" id="speed" min="1" max="20" value="8" step="0.5">
                 <div class="value-display"><span id="speedVal">8</span></div>
             </div>
 
             <div class="control-item">
-                <label>Gravity</label>
+                <label>Gravedad</label>
                 <input type="range" id="gravity" min="0" max="2" value="0.3" step="0.1">
                 <div class="value-display"><span id="gravityVal">0.3</span></div>
             </div>
 
             <div class="control-item">
-                <label>Spread</label>
+                <label>Dispersión</label>
                 <input type="range" id="spread" min="0" max="360" value="45" step="15">
                 <div class="value-display"><span id="spreadVal">45</span>°</div>
             </div>
@@ -404,31 +412,31 @@
             <div class="section-title">Visual</div>
             
             <div class="control-item">
-                <label>Color Mode</label>
+                <label>Modo de Color</label>
                 <div class="color-picker-wrapper">
                     <input type="color" id="colorPicker" value="#ff6b9d">
-                    <button class="mode-btn" id="rainbowMode" style="flex: 1;">Rainbow</button>
+                    <button class="mode-btn" id="rainbowMode" style="flex: 1;">Arcoíris</button>
                 </div>
             </div>
 
             <div class="control-item">
-                <label>Trail Length</label>
+                <label>Longitud de Estela</label>
                 <input type="range" id="trailLength" min="0" max="100" value="30">
                 <div class="value-display"><span id="trailLengthVal">30</span>%</div>
             </div>
 
             <div class="control-item">
-                <label>Particle Count</label>
+                <label>Cantidad de Partículas</label>
                 <input type="range" id="emissionRate" min="1" max="20" value="5">
                 <div class="value-display"><span id="emissionRateVal">5</span>/frame</div>
             </div>
         </div>
 
         <div class="control-section">
-            <div class="section-title">Effects</div>
+            <div class="section-title">Efectos</div>
             
             <div class="toggle-switch">
-                <label>Glow Effect</label>
+                <label>Efecto de Brillo</label>
                 <label class="switch">
                     <input type="checkbox" id="glowToggle" checked>
                     <span class="slider"></span>
@@ -436,7 +444,7 @@
             </div>
 
             <div class="toggle-switch">
-                <label>Connect Particles</label>
+                <label>Conectar Partículas</label>
                 <label class="switch">
                     <input type="checkbox" id="connectToggle">
                     <span class="slider"></span>
@@ -444,7 +452,7 @@
             </div>
 
             <div class="toggle-switch">
-                <label>Mouse Repulsion</label>
+                <label>Repulsión del Mouse</label>
                 <label class="switch">
                     <input type="checkbox" id="repulsionToggle">
                     <span class="slider"></span>
@@ -453,18 +461,19 @@
         </div>
 
         <div class="control-section">
-            <div class="section-title">Actions</div>
+            <div class="section-title">Acciones</div>
             <div class="action-buttons">
-                <button class="action-btn btn-primary" id="clearBtn">Clear Canvas</button>
-                <button class="action-btn btn-secondary" id="saveBtn">Save as Image</button>
-                <button class="action-btn btn-secondary" id="randomBtn">Random Settings</button>
+                <button class="action-btn btn-primary" id="clearBtn">Limpiar Canvas</button>
+                <button class="action-btn btn-secondary" id="saveBtn">Guardar como Imagen</button>
+                <button class="action-btn btn-secondary" id="randomBtn">Configuración Aleatoria</button>
             </div>
         </div>
     </div>
 
     <div class="stats">
-        <div>Particles: <span id="particleCount">0</span></div>
+        <div>Partículas: <span id="particleCount">0</span></div>
         <div>FPS: <span id="fps">60</span></div>
+        <div>Modo: <span id="renderMode">Dibujo</span></div>
     </div>
 
     <script>
@@ -477,6 +486,7 @@
         let currentMode = 'flow';
         let rainbowMode = false;
         let hue = 0;
+        let renderMode = 'draw'; // 'draw' o 'animation'
 
         const settings = {
             particleSize: 3,
@@ -652,28 +662,54 @@
         let fps = 60;
 
         function animate(currentTime) {
-            const fadeAlpha = 1 - (settings.trailLength / 100);
-            ctx.fillStyle = `rgba(13, 13, 13, ${fadeAlpha})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (renderMode === 'animation') {
+                const fadeAlpha = 1 - (settings.trailLength / 100);
+                ctx.fillStyle = `rgba(13, 13, 13, ${fadeAlpha})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            // En modo 'draw' no limpiamos el canvas, las partículas se quedan permanentes
 
             if (isMouseDown) {
                 createParticles(mouseX, mouseY);
             }
 
-            particles = particles.filter(p => {
-                p.update();
-                if (p.life > 0) {
-                    p.draw();
-                    return true;
-                }
-                return false;
-            });
+            if (renderMode === 'animation') {
+                particles = particles.filter(p => {
+                    p.update();
+                    if (p.life > 0) {
+                        p.draw();
+                        return true;
+                    }
+                    return false;
+                });
 
-            if (settings.connectParticles && particles.length < 200) {
-                connectParticles();
+                if (settings.connectParticles && particles.length < 200) {
+                    connectParticles();
+                }
+            } else {
+                // Modo dibujo: las partículas se dibujan y desaparecen inmediatamente
+                if (isMouseDown) {
+                    const color = rainbowMode ? `hsl(${hue}, 70%, 60%)` : settings.color;
+                    
+                    if (settings.glowEffect) {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = color;
+                    }
+
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(mouseX, mouseY, settings.particleSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+
+                    if (rainbowMode) {
+                        hue = (hue + 2) % 360;
+                    }
+                }
             }
 
-            document.getElementById('particleCount').textContent = particles.length;
+            document.getElementById('particleCount').textContent = renderMode === 'animation' ? particles.length : 'N/A';
 
             frames++;
             if (currentTime - lastTime >= 1000) {
@@ -787,7 +823,7 @@
 
         document.getElementById('saveBtn').addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = 'particle-art.png';
+            link.download = 'arte-particulas.png';
             link.href = canvas.toDataURL();
             link.click();
         });
@@ -819,6 +855,24 @@
 
             rainbowMode = Math.random() > 0.5;
             document.getElementById('rainbowMode').classList.toggle('active', rainbowMode);
+        });
+
+        document.getElementById('animationMode').addEventListener('click', () => {
+            renderMode = 'animation';
+            document.getElementById('animationMode').classList.add('active');
+            document.getElementById('drawMode').classList.remove('active');
+            document.getElementById('renderMode').textContent = 'Animación';
+            particles = [];
+            ctx.fillStyle = 'rgba(13, 13, 13, 1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById('drawMode').addEventListener('click', () => {
+            renderMode = 'draw';
+            document.getElementById('drawMode').classList.add('active');
+            document.getElementById('animationMode').classList.remove('active');
+            document.getElementById('renderMode').textContent = 'Dibujo';
+            particles = [];
         });
 
         animate(0);
