@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Partículas Interactivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d0d0d;
+            overflow: hidden;
+            color: #fff;
+            cursor: crosshair;
+        }
+
+        #canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .header {
+            padding: 25px 35px;
+            background: linear-gradient(180deg, rgba(13, 13, 13, 0.95) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            font-size: 1.6em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #12c2e9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+            font-weight: 400;
+        }
+
+        .control-panel {
+            position: fixed;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 280px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 0.7em;
+            font-weight: 600;
+            color: #ff6b9d;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: 'Space Grotesk', sans-serif;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 107, 157, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 100%);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .control-item {
+            margin-bottom: 18px;
+        }
+
+        .control-item label {
+            display: block;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 100%);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(255, 107, 157, 0.4);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.6);
+        }
+
+        .value-display {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #ff6b9d;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .toggle-switch label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0;
+        }
+
+        .switch {
+            position: relative;
+            width: 45px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 100%);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(21px);
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .stats span {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 157, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 157, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                right: 10px;
+                left: 10px;
+                width: auto;
+                top: auto;
+                bottom: 20px;
+                transform: none;
+                max-height: 60vh;
+            }
+
+            .stats {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-container">
+        <div class="header">
+            <div class="title">Particle Physics Studio</div>
+            <div class="subtitle">Interactive generative art with real-time physics</div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="control-section">
+            <div class="section-title">Emission Mode</div>
+            <div class="mode-grid">
+                <button class="mode-btn active" data-mode="flow">Flow</button>
+                <button class="mode-btn" data-mode="explosion">Explosion</button>
+                <button class="mode-btn" data-mode="gravity">Gravity</button>
+                <button class="mode-btn" data-mode="spiral">Spiral</button>
+                <button class="mode-btn" data-mode="fireworks">Fireworks</button>
+                <button class="mode-btn" data-mode="galaxy">Galaxy</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Physics</div>
+            
+            <div class="control-item">
+                <label>Particle Size</label>
+                <input type="range" id="particleSize" min="1" max="10" value="3" step="0.5">
+                <div class="value-display"><span id="particleSizeVal">3</span>px</div>
+            </div>
+
+            <div class="control-item">
+                <label>Speed</label>
+                <input type="range" id="speed" min="1" max="20" value="8" step="0.5">
+                <div class="value-display"><span id="speedVal">8</span></div>
+            </div>
+
+            <div class="control-item">
+                <label>Gravity</label>
+                <input type="range" id="gravity" min="0" max="2" value="0.3" step="0.1">
+                <div class="value-display"><span id="gravityVal">0.3</span></div>
+            </div>
+
+            <div class="control-item">
+                <label>Spread</label>
+                <input type="range" id="spread" min="0" max="360" value="45" step="15">
+                <div class="value-display"><span id="spreadVal">45</span>°</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Visual</div>
+            
+            <div class="control-item">
+                <label>Color Mode</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="colorPicker" value="#ff6b9d">
+                    <button class="mode-btn" id="rainbowMode" style="flex: 1;">Rainbow</button>
+                </div>
+            </div>
+
+            <div class="control-item">
+                <label>Trail Length</label>
+                <input type="range" id="trailLength" min="0" max="100" value="30">
+                <div class="value-display"><span id="trailLengthVal">30</span>%</div>
+            </div>
+
+            <div class="control-item">
+                <label>Particle Count</label>
+                <input type="range" id="emissionRate" min="1" max="20" value="5">
+                <div class="value-display"><span id="emissionRateVal">5</span>/frame</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Effects</div>
+            
+            <div class="toggle-switch">
+                <label>Glow Effect</label>
+                <label class="switch">
+                    <input type="checkbox" id="glowToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <label>Connect Particles</label>
+                <label class="switch">
+                    <input type="checkbox" id="connectToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-switch">
+                <label>Mouse Repulsion</label>
+                <label class="switch">
+                    <input type="checkbox" id="repulsionToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Actions</div>
+            <div class="action-buttons">
+                <button class="action-btn btn-primary" id="clearBtn">Clear Canvas</button>
+                <button class="action-btn btn-secondary" id="saveBtn">Save as Image</button>
+                <button class="action-btn btn-secondary" id="randomBtn">Random Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div>Particles: <span id="particleCount">0</span></div>
+        <div>FPS: <span id="fps">60</span></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouseX = 0;
+        let mouseY = 0;
+        let isMouseDown = false;
+        let currentMode = 'flow';
+        let rainbowMode = false;
+        let hue = 0;
+
+        const settings = {
+            particleSize: 3,
+            speed: 8,
+            gravity: 0.3,
+            spread: 45,
+            trailLength: 30,
+            emissionRate: 5,
+            glowEffect: true,
+            connectParticles: false,
+            repulsion: false,
+            color: '#ff6b9d'
+        };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor(x, y, vx, vy, color, mode) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.life = 1;
+                this.color = color;
+                this.size = settings.particleSize;
+                this.mode = mode;
+                this.angle = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+            }
+
+            update() {
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+                
+                if (this.mode === 'gravity' || this.mode === 'fireworks') {
+                    this.vy += settings.gravity;
+                }
+
+                if (this.mode === 'spiral') {
+                    this.angle += this.rotationSpeed;
+                    this.vx += Math.cos(this.angle) * 0.1;
+                    this.vy += Math.sin(this.angle) * 0.1;
+                }
+
+                if (this.mode === 'galaxy') {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const dx = centerX - this.x;
+                    const dy = centerY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const force = dist * 0.0001;
+                    this.vx += (dx / dist) * force;
+                    this.vy += (dy / dist) * force;
+                }
+
+                if (settings.repulsion) {
+                    const dx = this.x - mouseX;
+                    const dy = this.y - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        const force = (100 - dist) / 100;
+                        this.vx += (dx / dist) * force * 2;
+                        this.vy += (dy / dist) * force * 2;
+                    }
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.life -= 0.01;
+
+                if (this.x < 0 || this.x > canvas.width || 
+                    this.y < 0 || this.y > canvas.height) {
+                    this.life = 0;
+                }
+            }
+
+            draw() {
+                ctx.globalAlpha = this.life;
+                
+                if (settings.glowEffect) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+                }
+
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function createParticles(x, y) {
+            const color = rainbowMode ? `hsl(${hue}, 70%, 60%)` : settings.color;
+            
+            for (let i = 0; i < settings.emissionRate; i++) {
+                let vx, vy;
+                const baseSpeed = settings.speed;
+
+                switch (currentMode) {
+                    case 'explosion':
+                        const angle = Math.random() * Math.PI * 2;
+                        vx = Math.cos(angle) * baseSpeed;
+                        vy = Math.sin(angle) * baseSpeed;
+                        break;
+                    
+                    case 'flow':
+                        const spreadRad = (settings.spread * Math.PI / 180);
+                        const flowAngle = -Math.PI / 2 + (Math.random() - 0.5) * spreadRad;
+                        vx = Math.cos(flowAngle) * baseSpeed;
+                        vy = Math.sin(flowAngle) * baseSpeed;
+                        break;
+                    
+                    case 'spiral':
+                    case 'galaxy':
+                        const spiralAngle = (Math.random() * Math.PI * 2);
+                        vx = Math.cos(spiralAngle) * baseSpeed * 0.5;
+                        vy = Math.sin(spiralAngle) * baseSpeed * 0.5;
+                        break;
+                    
+                    case 'fireworks':
+                        const fwAngle = Math.random() * Math.PI * 2;
+                        const fwSpeed = baseSpeed * (0.5 + Math.random() * 0.5);
+                        vx = Math.cos(fwAngle) * fwSpeed;
+                        vy = Math.sin(fwAngle) * fwSpeed - baseSpeed;
+                        break;
+                    
+                    default:
+                        vx = (Math.random() - 0.5) * baseSpeed;
+                        vy = (Math.random() - 0.5) * baseSpeed;
+                }
+
+                particles.push(new Particle(x, y, vx, vy, color, currentMode));
+            }
+
+            if (rainbowMode) {
+                hue = (hue + 2) % 360;
+            }
+        }
+
+        function connectParticles() {
+            const maxDist = 100;
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < maxDist) {
+                        ctx.globalAlpha = (1 - dist / maxDist) * 0.3;
+                        ctx.strokeStyle = particles[i].color;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        let lastTime = 0;
+        let frames = 0;
+        let fps = 60;
+
+        function animate(currentTime) {
+            const fadeAlpha = 1 - (settings.trailLength / 100);
+            ctx.fillStyle = `rgba(13, 13, 13, ${fadeAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (isMouseDown) {
+                createParticles(mouseX, mouseY);
+            }
+
+            particles = particles.filter(p => {
+                p.update();
+                if (p.life > 0) {
+                    p.draw();
+                    return true;
+                }
+                return false;
+            });
+
+            if (settings.connectParticles && particles.length < 200) {
+                connectParticles();
+            }
+
+            document.getElementById('particleCount').textContent = particles.length;
+
+            frames++;
+            if (currentTime - lastTime >= 1000) {
+                fps = frames;
+                document.getElementById('fps').textContent = fps;
+                frames = 0;
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isMouseDown = true;
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        });
+
+        canvas.addEventListener('touchend', () => {
+            isMouseDown = false;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        });
+
+        document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+            });
+        });
+
+        document.getElementById('particleSize').addEventListener('input', (e) => {
+            settings.particleSize = parseFloat(e.target.value);
+            document.getElementById('particleSizeVal').textContent = settings.particleSize;
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            settings.speed = parseFloat(e.target.value);
+            document.getElementById('speedVal').textContent = settings.speed;
+        });
+
+        document.getElementById('gravity').addEventListener('input', (e) => {
+            settings.gravity = parseFloat(e.target.value);
+            document.getElementById('gravityVal').textContent = settings.gravity;
+        });
+
+        document.getElementById('spread').addEventListener('input', (e) => {
+            settings.spread = parseInt(e.target.value);
+            document.getElementById('spreadVal').textContent = settings.spread;
+        });
+
+        document.getElementById('trailLength').addEventListener('input', (e) => {
+            settings.trailLength = parseInt(e.target.value);
+            document.getElementById('trailLengthVal').textContent = settings.trailLength;
+        });
+
+        document.getElementById('emissionRate').addEventListener('input', (e) => {
+            settings.emissionRate = parseInt(e.target.value);
+            document.getElementById('emissionRateVal').textContent = settings.emissionRate;
+        });
+
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            settings.color = e.target.value;
+            rainbowMode = false;
+            document.getElementById('rainbowMode').classList.remove('active');
+        });
+
+        document.getElementById('rainbowMode').addEventListener('click', () => {
+            rainbowMode = !rainbowMode;
+            document.getElementById('rainbowMode').classList.toggle('active');
+        });
+
+        document.getElementById('glowToggle').addEventListener('change', (e) => {
+            settings.glowEffect = e.target.checked;
+        });
+
+        document.getElementById('connectToggle').addEventListener('change', (e) => {
+            settings.connectParticles = e.target.checked;
+        });
+
+        document.getElementById('repulsionToggle').addEventListener('change', (e) => {
+            settings.repulsion = e.target.checked;
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            particles = [];
+            ctx.fillStyle = 'rgba(13, 13, 13, 1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'particle-art.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            settings.particleSize = Math.random() * 9 + 1;
+            settings.speed = Math.random() * 19 + 1;
+            settings.gravity = Math.random() * 2;
+            settings.spread = Math.floor(Math.random() * 360);
+            settings.trailLength = Math.floor(Math.random() * 100);
+            settings.emissionRate = Math.floor(Math.random() * 19 + 1);
+
+            document.getElementById('particleSize').value = settings.particleSize;
+            document.getElementById('particleSizeVal').textContent = settings.particleSize.toFixed(1);
+            document.getElementById('speed').value = settings.speed;
+            document.getElementById('speedVal').textContent = settings.speed.toFixed(1);
+            document.getElementById('gravity').value = settings.gravity;
+            document.getElementById('gravityVal').textContent = settings.gravity.toFixed(1);
+            document.getElementById('spread').value = settings.spread;
+            document.getElementById('spreadVal').textContent = settings.spread;
+            document.getElementById('trailLength').value = settings.trailLength;
+            document.getElementById('trailLengthVal').textContent = settings.trailLength;
+            document.getElementById('emissionRate').value = settings.emissionRate;
+            document.getElementById('emissionRateVal').textContent = settings.emissionRate;
+
+            const modes = ['flow', 'explosion', 'gravity', 'spiral', 'fireworks', 'galaxy'];
+            const randomMode = modes[Math.floor(Math.random() * modes.length)];
+            document.querySelector(`[data-mode="${randomMode}"]`).click();
+
+            rainbowMode = Math.random() > 0.5;
+            document.getElementById('rainbowMode').classList.toggle('active', rainbowMode);
+        });
+
+        animate(0);
+    </script>
+</body>
+</html>
